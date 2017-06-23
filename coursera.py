@@ -40,6 +40,8 @@ def get_courses_list(xml_data, number_of_courses):
     sitemap = etree.fromstring(xml_data)
     my_namespace = {'default': sitemap.nsmap[None]}
     all_links = sitemap.xpath('//default:loc', namespaces=my_namespace)
+    if number_of_courses > len(all_links):
+        number_of_courses = len(all_links)
     return [link.text for link in random.sample(all_links, number_of_courses)]
 
 
