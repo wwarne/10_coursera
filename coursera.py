@@ -167,8 +167,8 @@ def output_courses_info_to_xlsx(filepath, data_stream, worksheet_title='Courses 
 
 def create_parser():
     result = argparse.ArgumentParser()
-    result.add_argument('number', default=20, type=int, help='How many courses to process', nargs='?')
     result.add_argument('filepath', default='courses.xlsx', help='Save to', nargs='?')
+    result.add_argument('number', default=20, type=int, help='How many courses to process', nargs='?')
     return result
 
 
