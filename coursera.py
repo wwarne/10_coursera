@@ -52,14 +52,12 @@ def get_course_title(page_element):
     title_element = page_element.xpath('//h1[contains(concat(" ", @class, " "), "title")]')
     if title_element:
         return str(title_element[0].text_content())
-    return None
 
 
 def get_course_language(page_element):
     lang_element = page_element.xpath('//div[contains(concat(" ", @class, " "), "language-info")]/div')
     if lang_element:
         return str(lang_element[0].text_content())
-    return None
 
 
 def get_course_rating(page_element):
@@ -67,21 +65,18 @@ def get_course_rating(page_element):
     if rating_element:
         text = str(rating_element[0].text_content())
         return ''.join(x for x in text if x in '0123456789.')
-    return None
 
 
 def get_course_duration(page_element):
     duration_element = page_element.xpath('//div[contains(concat(" ", @class, " "), "week-body")]')
     if duration_element:
         return len(duration_element)
-    return None
 
 
 def get_course_start_date(page_element):
     start_date = page_element.xpath('//div[contains(concat(" ", @class, " "), "startdate")]')
     if start_date:
         return str(start_date[0].text_content())
-    return None
 
 
 def crawl_courses_info(urls_list, session=None):
