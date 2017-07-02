@@ -88,10 +88,10 @@ def crawl_courses_info(urls_list, session=None):
     result = []
     total_url = len(urls_list)
     for url_num, url in enumerate(urls_list, start=1):
-        inform_user('Processing page {}/{} at: {}'.format(url_num, total_url, url))
+        print('Processing page {}/{} at: {}'.format(url_num, total_url, url))
         page_data = fetch_url(url, session=session)
         if isinstance(page_data, str):
-            inform_user('[ERROR] {}'.format(page_data))
+            print('[ERROR] {}'.format(page_data))
             continue
         course_page = html.fromstring(page_data.content.decode('utf-8'))
         course_info = {
@@ -104,10 +104,6 @@ def crawl_courses_info(urls_list, session=None):
         }
         result.append(course_info)
     return result
-
-
-def inform_user(message):
-    print(message)
 
 
 def style_range(worksheet, cell_range, bg_color=None, align=None):
@@ -179,7 +175,7 @@ def create_parser():
 def get_coursera_sitemap(session=None):
     xml = fetch_url('https://www.coursera.org/sitemap~www~courses.xml', session=session)
     if isinstance(xml, str):
-        inform_user('[ERROR] {}'.format(xml))
+        print('[ERROR] {}'.format(xml))
         return None
     return xml.content
 
