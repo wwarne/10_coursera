@@ -184,6 +184,6 @@ if __name__ == '__main__':
     if sitemap_xml is None:
         sys.exit(1)
 
-    links = get_courses_list(sitemap_xml)
+    links = get_courses_list(sitemap_xml, number_of_courses=namespace.number)
     info = crawl_courses_info(links, session=download_session)
     output_courses_info_to_xlsx(namespace.filepath, info)
