@@ -17,17 +17,17 @@ def prepare_session():
         'Accept-Language': 'en-US;q=0.8,en;q=0.3',
         'Accept': 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
     }
-    session = requests.Session()
-    session.headers.update(headers)
-    return session
+    http_session = requests.Session()
+    http_session.headers.update(headers)
+    return http_session
 
 
 def fetch_url(url, session=None):
     if not session:
         session = prepare_session()
     try:
-        result = session.get(url, timeout=30)
-        result.raise_for_status()
+        webpage_data = session.get(url, timeout=30)
+        webpage_data.raise_for_status()
     except requests.exceptions.ConnectionError:
         return 'Network problem while processing {}'.format(url)
     except requests.exceptions.Timeout:
@@ -36,7 +36,7 @@ def fetch_url(url, session=None):
         return 'Too many redirects at'.format(url)
     except requests.exceptions.HTTPError:
         return 'HTTP error occured while processing {}'.format(url)
-    return result
+    return webpage_data
 
 
 def get_courses_list(xml_data, number_of_courses):
@@ -80,7 +80,7 @@ def get_course_start_date(page_element):
 
 
 def crawl_courses_info(urls_list, session=None):
-    result = []
+    courses_data = []
     total_url = len(urls_list)
     for url_num, url in enumerate(urls_list, start=1):
         print('Processing page {}/{} at: {}'.format(url_num, total_url, url))
@@ -97,8 +97,8 @@ def crawl_courses_info(urls_list, session=None):
             'duration': get_course_duration(course_page),
             'url': url
         }
-        result.append(course_info)
-    return result
+        courses_data.append(course_info)
+    return courses_data
 
 
 def style_range(worksheet, cell_range, bg_color=None, align=None):
@@ -161,10 +161,10 @@ def output_courses_info_to_xlsx(filepath, data_stream, worksheet_title='Courses 
 
 
 def create_parser():
-    result = argparse.ArgumentParser()
-    result.add_argument('filepath', default='courses.xlsx', help='Save to', nargs='?')
-    result.add_argument('number', default=20, type=int, help='How many courses to process', nargs='?')
-    return result
+    argument_parser = argparse.ArgumentParser()
+    argument_parser.add_argument('filepath', default='courses.xlsx', help='Save to', nargs='?')
+    argument_parser.add_argument('number', default=20, type=int, help='How many courses to process', nargs='?')
+    return argument_parser
 
 
 def get_coursera_sitemap(session=None):
