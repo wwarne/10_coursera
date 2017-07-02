@@ -10,30 +10,33 @@ from openpyxl.styles.borders import Border, Side
 from openpyxl.styles.fills import PatternFill
 
 
-class CourseraDownloader:
-    def __init__(self):
-        self.headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) '
-                          'Chrome/56.0.2924.87 Safari/537.36',
-            'Accept-Language': 'en-US;q=0.8,en;q=0.3',
-            'Accept': 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
-        }
-        self.session = requests.Session()
-        self.session.headers.update(self.headers)
+def prepare_session():
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko)'
+                      ' Chrome/56.0.2924.87 Safari/537.36',
+        'Accept-Language': 'en-US;q=0.8,en;q=0.3',
+        'Accept': 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+    }
+    session = requests.Session()
+    session.headers.update(headers)
+    return session
 
-    def fetch_url(self, url):
-        try:
-            result = self.session.get(url, timeout=30)
-            result.raise_for_status()
-        except requests.exceptions.ConnectionError:
-            return 'Network problem while processing {}'.format(url)
-        except requests.exceptions.Timeout:
-            return 'Request times out while processing {}'.format(url)
-        except requests.exceptions.TooManyRedirects:
-            return 'Too many redirects at'.format(url)
-        except requests.exceptions.HTTPError:
-            return 'HTTP error occured while processing {}'.format(url)
-        return result
+
+def fetch_url(url, session=None):
+    if not session:
+        session = prepare_session()
+    try:
+        result = session.get(url, timeout=30)
+        result.raise_for_status()
+    except requests.exceptions.ConnectionError:
+        return 'Network problem while processing {}'.format(url)
+    except requests.exceptions.Timeout:
+        return 'Request times out while processing {}'.format(url)
+    except requests.exceptions.TooManyRedirects:
+        return 'Too many redirects at'.format(url)
+    except requests.exceptions.HTTPError:
+        return 'HTTP error occured while processing {}'.format(url)
+    return result
 
 
 def get_courses_list(xml_data, number_of_courses):
@@ -81,13 +84,12 @@ def get_course_start_date(page_element):
     return None
 
 
-def crawl_courses_info(urls_list):
-    download_master = CourseraDownloader()
+def crawl_courses_info(urls_list, session=None):
     result = []
     total_url = len(urls_list)
     for url_num, url in enumerate(urls_list, start=1):
         inform_user('Processing page {}/{} at: {}'.format(url_num, total_url, url))
-        page_data = download_master.fetch_url(url)
+        page_data = fetch_url(url, session=session)
         if isinstance(page_data, str):
             inform_user('[ERROR] {}'.format(page_data))
             continue
@@ -174,8 +176,8 @@ def create_parser():
     return result
 
 
-def get_coursera_sitemap():
-    xml = CourseraDownloader().fetch_url('https://www.coursera.org/sitemap~www~courses.xml')
+def get_coursera_sitemap(session=None):
+    xml = fetch_url('https://www.coursera.org/sitemap~www~courses.xml', session=session)
     if isinstance(xml, str):
         inform_user('[ERROR] {}'.format(xml))
         return None
@@ -186,10 +188,11 @@ if __name__ == '__main__':
     parser = create_parser()
     namespace = parser.parse_args()
 
-    sitemap_xml = get_coursera_sitemap()
+    download_session = prepare_session()
+    sitemap_xml = get_coursera_sitemap(session=download_session)
     if sitemap_xml is None:
         sys.exit(1)
 
     links = get_courses_list(sitemap_xml)
-    info = crawl_courses_info(links)
+    info = crawl_courses_info(links, session=download_session)
     output_courses_info_to_xlsx(namespace.filepath, info)
