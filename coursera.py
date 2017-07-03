@@ -23,8 +23,7 @@ def prepare_session():
 
 
 def fetch_url(url, session=None):
-    if not session:
-        session = prepare_session()
+    session = session or prepare_session()
     try:
         webpage_data = session.get(url, timeout=30)
         webpage_data.raise_for_status()
