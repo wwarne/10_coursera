@@ -28,14 +28,14 @@ def fetch_url(url, session=None):
         webpage_data = session.get(url, timeout=30)
         webpage_data.raise_for_status()
     except requests.exceptions.ConnectionError:
-        return 'Network problem while processing {}'.format(url)
+        return None, 'Network problem while processing {}'.format(url)
     except requests.exceptions.Timeout:
-        return 'Request times out while processing {}'.format(url)
+        return None, 'Request times out while processing {}'.format(url)
     except requests.exceptions.TooManyRedirects:
-        return 'Too many redirects at'.format(url)
+        return None, 'Too many redirects at'.format(url)
     except requests.exceptions.HTTPError:
-        return 'HTTP error occured while processing {}'.format(url)
-    return webpage_data
+        return None, 'HTTP error occured while processing {}'.format(url)
+    return webpage_data, None
 
 
 def get_courses_list(xml_data, number_of_courses):
@@ -83,9 +83,9 @@ def crawl_courses_info(urls_list, session=None):
     total_url = len(urls_list)
     for url_num, url in enumerate(urls_list, start=1):
         print('Processing page {}/{} at: {}'.format(url_num, total_url, url))
-        page_data = fetch_url(url, session=session)
-        if isinstance(page_data, str):
-            print('[ERROR] {}'.format(page_data))
+        page_data, error = fetch_url(url, session=session)
+        if error:
+            print('[ERROR] {}'.format(error))
             continue
         course_page = html.fromstring(page_data.content.decode('utf-8'))
         course_info = {
@@ -167,9 +167,9 @@ def create_parser():
 
 
 def get_coursera_sitemap(session=None):
-    xml = fetch_url('https://www.coursera.org/sitemap~www~courses.xml', session=session)
-    if isinstance(xml, str):
-        print('[ERROR] {}'.format(xml))
+    xml, error = fetch_url('https://www.coursera.org/sitemap~www~courses.xml', session=session)
+    if error:
+        print('[ERROR] {}'.format(error))
         return None
     return xml.content
 
